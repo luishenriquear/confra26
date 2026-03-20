@@ -84,6 +84,7 @@
         .btn-success { background: #27ae60; }
         .btn-danger { background: var(--danger); }
         .btn-secondary { background: #7f8c8d; }
+        .btn-warning { background: #f39c12; color: #fff; }
 
         .participant-list { padding: 0 15px 15px; }
         .participant-card { background: var(--card-bg); margin-bottom: 10px; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1); border: 1px solid var(--border); }
@@ -121,12 +122,12 @@
             <h1>Confraternização<br>2026</h1>
             <button class="btn-start" onclick="window.showScreen('screen-main')">INICIAR</button>
         </div>
-        <footer>©2026 Confra26 | Todos os direitos reservados | Desenvolvido por L.H.A.R®</footer>
+        <footer>©2026 Confra26, todos os direitos reservados | desenvolvido por L.H.A.R®</footer>
     </div>
 
     <div id="screen-main">
         <div class="marquee-container">
-            <div class="marquee-text">✨ CONFRATERNIZAÇÃO 2026 ✨</div>
+            <div class="marquee-text">✨ CONFRATERNIZAÇÃO 2026 ✨ PREPARE-SE PARA A MELHOR FESTA DO ANO! ✨</div>
         </div>
 
         <div class="action-header">
@@ -140,6 +141,9 @@
 
         <div id="admin-panel">
             <h3 style="margin-bottom: 10px;">Gerenciador (Ativo)</h3>
+            
+            <button class="btn btn-warning" style="width: 100%; margin-bottom: 15px;" onclick="window.rescueLocalData()">🔄 Resgatar Dados Antigos</button>
+
             <label class="btn btn-secondary" style="cursor: pointer; width: 100%; margin-bottom: 15px; box-sizing: border-box;">
                 📷 Anexar Logo do Pix
                 <input type="file" style="display:none;" accept="image/*" onchange="window.uploadPixLogo(event)">
@@ -179,7 +183,7 @@
         <div class="pix-area">
             <img id="pix-display-img" src="" alt="Pix" class="pix-img" style="display: none;">
             <div class="pix-info">
-                <span class="pix-key-title">Chave Pix  para Depósito:</span>
+                <span class="pix-key-title">Chave para Depósito:</span>
                 <span class="pix-key-value" id="pix-key-display">[Insira sua chave Pix no Gerenciador]</span>
             </div>
         </div>
@@ -189,7 +193,7 @@
         </div>
 
         <div class="participant-list" id="participants-container"></div>
-        <footer>©2026 Confra26 | Todos os direitos reservados | Desenvolvido por L.H.A.R®</footer>
+        <footer>©2026 Confra26, todos os direitos reservados | desenvolvido por L.H.A.R®</footer>
     </div>
 
     <div id="add-modal" class="modal">
@@ -269,6 +273,24 @@
                 alert("Erro ao salvar! Verifique as permissões de gravação no console do Firebase.");
             });
             window.renderApp();
+        }
+
+        // --- FUNÇÃO DE RESGATE (NOVO) ---
+        window.rescueLocalData = function() {
+            try {
+                let oldLocalData = JSON.parse(localStorage.getItem('confraData'));
+                if (oldLocalData && oldLocalData.participantes && oldLocalData.participantes.length > 0) {
+                    if(confirm("Deseja resgatar os dados salvos anteriormente neste navegador e enviá-los para a nuvem? Isso substituirá a lista vazia atual.")) {
+                        window.appData = oldLocalData;
+                        window.save(); // Envia pra nuvem
+                        alert("Sucesso! Seus dados foram resgatados e estão na nuvem.");
+                    }
+                } else {
+                    alert("Nenhum dado antigo encontrado neste navegador.");
+                }
+            } catch (e) {
+                alert("Erro ao ler dados antigos.");
+            }
         }
 
         window.showScreen = function(id) {
@@ -368,7 +390,6 @@
             window.save();
         }
 
-        // --- Compressores de Imagem ---
         function compressAndSaveImage(file, callback) {
             const reader = new FileReader();
             reader.onload = function(e) {
@@ -390,10 +411,7 @@
                     canvas.height = height;
                     ctx.drawImage(img, 0, 0, width, height);
                     
-                    // NOVA LÓGICA: Verifica se a imagem enviada é PNG. Se for, usa WebP para manter a transparência leve. 
-                    // Se não for PNG (como a foto da câmera de um comprovante), usa JPEG.
                     let formato = file.type === 'image/png' ? 'image/webp' : 'image/jpeg';
-                    
                     callback(canvas.toDataURL(formato, 0.7));
                 };
                 img.src = e.target.result;
